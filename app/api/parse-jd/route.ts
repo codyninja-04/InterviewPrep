@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mockDelay, MOCK_PARSED_JD } from "@/lib/mocks";
+import { askGeminiJSON } from "@/lib/gemini";
+import { JD_PARSER_PROMPT } from "@/lib/prompts";
+import type { ParsedJD } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,8 +22,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await mockDelay(1400);
-    return NextResponse.json(MOCK_PARSED_JD);
+    const prompt = JD_PARSER_PROMPT.replace("{jd_text}", jdText);
+    const parsed = await askGeminiJSON<ParsedJD>(prompt);
+
+    return NextResponse.json(parsed);
   } catch (error) {
     console.error("[parse-jd]", error);
     return NextResponse.json(

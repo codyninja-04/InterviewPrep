@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mockDelay, MOCK_SCORES } from "@/lib/mocks";
+import { askGeminiJSON } from "@/lib/gemini";
+import { ANSWER_SCORER_PROMPT } from "@/lib/prompts";
+import type { AnswerScore } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,12 +22,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await mockDelay(1200);
+    const prompt = ANSWER_SCORER_PROMPT
+      .replace("{question}", question)
+      .replace("{type}", type ?? "technical")
+      .replace("{skill}", skill ?? "general")
+      .replace("{answer}", answer);
 
-    // Rotate through mock scores based on answer length so repeated
-    // submissions feel varied rather than identical.
-    const index = answer.length % MOCK_SCORES.length;
-    return NextResponse.json(MOCK_SCORES[index]);
+    const scored = await askGeminiJSON<AnswerScore>(prompt);
+
+    return NextResponse.json(scored);
   } catch (error) {
     console.error("[score-answer]", error);
     return NextResponse.json(
