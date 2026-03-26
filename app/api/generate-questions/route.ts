@@ -20,9 +20,18 @@ export async function POST(req: NextRequest) {
       .replace("{skills}", (skills as string[]).join(", "))
       .replace("{level}", level ?? "mid");
 
-    const raw = await askGeminiJSON<Omit<Question, "id">[]>(prompt);
+    const raw = await askGeminiJSON<Omit<Question, "id">[] | Record<string, unknown>>(prompt);
 
-    const questions: Question[] = raw.map((q, i) => ({
+    // Groq/OpenRouter json_object mode wraps arrays in an object — unwrap it
+    const arr: Omit<Question, "id">[] = Array.isArray(raw)
+      ? raw
+      : Array.isArray(Object.values(raw)[0])
+        ? (Object.values(raw)[0] as Omit<Question, "id">[])
+        : [];
+
+    if (arr.length === 0) throw new Error("AI returned no questions.");
+
+    const questions: Question[] = arr.map((q, i) => ({
       ...q,
       id: `q-${i}`,
     }));
