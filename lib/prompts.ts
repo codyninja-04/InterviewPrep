@@ -1,71 +1,40 @@
 // ─── JD Parser ───────────────────────────────────────────────────────────────
+// Kept minimal — JD is already truncated before being injected
 
-export const JD_PARSER_PROMPT = `You are a senior technical recruiter with 10+ years of experience. Analyze the job description below and extract structured data.
-
-Return ONLY valid JSON — no markdown fences, no explanation, no extra text.
+export const JD_PARSER_PROMPT = `Extract structured data from this job description. Return JSON only.
 
 {
   "job_title": "string",
-  "company": "string or null",
-  "required_skills": ["skill1", "skill2"],
-  "preferred_skills": ["skill1", "skill2"],
-  "experience_level": "junior | mid | senior",
-  "key_responsibilities": ["resp1", "resp2"],
-  "culture_signals": ["signal1", "signal2"]
+  "company": "string|null",
+  "required_skills": ["max 6 items"],
+  "preferred_skills": ["max 4 items"],
+  "experience_level": "junior|mid|senior",
+  "key_responsibilities": ["max 4 items"],
+  "culture_signals": ["max 3 items"]
 }
 
-Rules:
-- required_skills: only hard requirements explicitly stated
-- preferred_skills: nice-to-haves, "bonus", "plus" items
-- experience_level: infer from years required or seniority language
-- culture_signals: work style, values, team culture hints
-- All arrays: 3–8 items max, be specific not generic
+Rules: required_skills = explicit hard requirements only. preferred_skills = "bonus/nice-to-have" items. experience_level = infer from years/title. Arrays: short specific phrases, no duplicates.
 
-Job Description:
+JD:
 {jd_text}`;
 
 // ─── Question Generator ───────────────────────────────────────────────────────
 
-export const QUESTION_GEN_PROMPT = `You are a senior engineering interviewer at a top-tier tech company. Generate a tailored interview question set for this candidate.
+export const QUESTION_GEN_PROMPT = `Generate 8 interview questions for this role. Return JSON array only.
 
-Role: {job_title}
-Required Skills: {skills}
-Experience Level: {level}
+Role: {job_title} ({level})
+Skills: {skills}
 
-Generate exactly 10 questions:
-- 4 technical (test the required skills directly, be specific)
-- 3 behavioral (STAR method suitable, role-relevant scenarios)
-- 3 situational (real challenges they'd face in this specific role)
+Mix: 3 technical, 3 behavioral (STAR), 2 situational.
 
-Return ONLY a valid JSON array — no markdown, no extra text:
-[
-  {
-    "question": "string",
-    "type": "technical | behavioral | situational",
-    "mapped_skill": "string",
-    "what_they_look_for": "string (2 sentences max, what a strong answer demonstrates)"
-  }
-]`;
+[{"question":"string","type":"technical|behavioral|situational","mapped_skill":"string","what_they_look_for":"1 sentence"}]`;
 
 // ─── Answer Scorer ────────────────────────────────────────────────────────────
 
-export const ANSWER_SCORER_PROMPT = `You are a senior interviewer evaluating a candidate's response. Be constructive, specific, and honest.
+export const ANSWER_SCORER_PROMPT = `Score this interview answer. Return JSON only.
 
-Question: {question}
-Question Type: {type}
-Target Skill: {skill}
-Candidate's Answer: {answer}
+Q: {question}
+Type: {type} | Skill: {skill}
+Answer: {answer}
 
-Score 1–10 where:
-1–3 = Poor (vague, irrelevant, missing the point)
-4–6 = Average (on track but lacks depth or examples)
-7–8 = Good (clear, structured, demonstrates competence)
-9–10 = Excellent (specific, concise, shows mastery)
-
-Return ONLY valid JSON — no markdown, no extra text:
-{
-  "score": number,
-  "strengths": ["strength1", "strength2"],
-  "improvements": ["improvement1", "improvement2"],
-  "sample_better_answer": "A stronger version of their answer (3–4 sentences, specific and structured)"
-}`;
+{"score":1-10,"strengths":["2 items max"],"improvements":["2 items max"],"sample_better_answer":"2 sentences"}`;

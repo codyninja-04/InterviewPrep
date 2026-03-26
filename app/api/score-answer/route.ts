@@ -3,6 +3,9 @@ import { askGeminiJSON } from "@/lib/gemini";
 import { ANSWER_SCORER_PROMPT } from "@/lib/prompts";
 import type { AnswerScore } from "@/lib/types";
 
+// Cap answer length sent to AI — saves tokens on every scoring call
+const ANSWER_CHAR_LIMIT = 1_200;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -22,11 +25,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const truncatedAnswer = answer.trim().slice(0, ANSWER_CHAR_LIMIT);
+
     const prompt = ANSWER_SCORER_PROMPT
       .replace("{question}", question)
       .replace("{type}", type ?? "technical")
       .replace("{skill}", skill ?? "general")
-      .replace("{answer}", answer);
+      .replace("{answer}", truncatedAnswer);
 
     const scored = await askGeminiJSON<AnswerScore>(prompt);
 

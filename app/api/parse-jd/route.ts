@@ -3,6 +3,9 @@ import { askGeminiJSON } from "@/lib/gemini";
 import { JD_PARSER_PROMPT } from "@/lib/prompts";
 import type { ParsedJD } from "@/lib/types";
 
+// Only send the first 4,000 chars — enough for any JD, saves ~70% of input tokens
+const JD_CHAR_LIMIT = 4_000;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -15,14 +18,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (jdText.trim().length > 15_000) {
-      return NextResponse.json(
-        { error: "Job description exceeds maximum length (15,000 chars)." },
-        { status: 400 }
-      );
-    }
-
-    const prompt = JD_PARSER_PROMPT.replace("{jd_text}", jdText);
+    const truncated = jdText.trim().slice(0, JD_CHAR_LIMIT);
+    const prompt = JD_PARSER_PROMPT.replace("{jd_text}", truncated);
     const parsed = await askGeminiJSON<ParsedJD>(prompt);
 
     return NextResponse.json(parsed);
