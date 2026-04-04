@@ -84,7 +84,26 @@ export function Navbar() {
           )}
 
           {user ? (
-            <div className="relative ml-2">
+            <div className="flex items-center gap-1 ml-2">
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "px-3 py-1.5 text-sm rounded-lg transition-colors",
+                  pathname === "/dashboard" ? "text-violet-400 bg-violet-500/10" : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                )}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/history"
+                className={cn(
+                  "px-3 py-1.5 text-sm rounded-lg transition-colors",
+                  pathname === "/history" ? "text-violet-400 bg-violet-500/10" : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                )}
+              >
+                History
+              </Link>
+            <div className="relative ml-1">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-zinc-900/80 px-2.5 py-1.5 hover:border-violet-500/30 hover:bg-zinc-800/80 transition-all duration-200 group"
@@ -132,6 +151,7 @@ export function Navbar() {
                 </div>
               )}
             </div>
+            </div>
           ) : (
             <div className="flex items-center gap-2 ml-2">
               <button
@@ -177,9 +197,17 @@ export function Navbar() {
             Start Prepping →
           </Link>
           {user ? (
-            <button onClick={handleSignOut} className="flex items-center gap-2 px-3 py-2 text-sm text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors w-full">
-              Sign Out
-            </button>
+            <>
+              <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-white/5 transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/history" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-white/5 transition-colors">
+                History
+              </Link>
+              <button onClick={handleSignOut} className="flex items-center gap-2 px-3 py-2 text-sm text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors w-full">
+                Sign Out
+              </button>
+            </>
           ) : (
             <button onClick={handleSignIn} className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-white/5 transition-colors w-full">
               <GoogleIcon />
