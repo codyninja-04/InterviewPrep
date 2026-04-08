@@ -10,7 +10,7 @@ import type { AnswerScore } from "@/lib/types";
 
 export default function SessionPage() {
   const router = useRouter();
-  const { parsedJD, questions, setScore, setAnswer, reset } = useSessionStore();
+  const { parsedJD, questions, setScore, setAnswer, clearScore, reset } = useSessionStore();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [done, setDone] = useState(false);
@@ -130,6 +130,7 @@ export default function SessionPage() {
           total={questions.length}
           onScore={handleScore}
           onNext={handleNext}
+          onRetry={() => clearScore(questions[activeIndex].id)}
           isLast={activeIndex === questions.length - 1}
         />
       </div>

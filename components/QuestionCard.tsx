@@ -22,16 +22,27 @@ interface QuestionCardProps {
   total: number;
   onScore: (score: AnswerScore) => void;
   onNext: () => void;
+  onRetry?: () => void;
   isLast: boolean;
 }
 
-export function QuestionCard({ question, index, total, onScore, onNext, isLast }: QuestionCardProps) {
+export function QuestionCard({ question, index, total, onScore, onNext, onRetry, isLast }: QuestionCardProps) {
   const [answer, setAnswer] = useState(question.user_answer ?? "");
   const [scoring, setScoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scored, setScored] = useState(!!question.score);
   const [hintOpen, setHintOpen] = useState(false);
   const [streamingScore, setStreamingScore] = useState<Partial<AnswerScore> | null>(null);
+  const [attempt, setAttempt] = useState(1);
+
+  function handleRetry() {
+    if (scoring) return;
+    setScored(false);
+    setStreamingScore(null);
+    setError(null);
+    setAttempt((n) => n + 1);
+    onRetry?.();
+  }
 
   const typeMeta = TYPE_STYLE[question.type];
   const hasAnswer = answer.trim().length >= 10;
@@ -141,9 +152,10 @@ export function QuestionCard({ question, index, total, onScore, onNext, isLast }
             <div className="flex items-center justify-between">
               <span className="text-xs text-zinc-600 tabular-nums">
                 {wordCount} word{wordCount !== 1 ? "s" : ""}
+                {attempt > 1 && <span className="ml-2 text-violet-400">· attempt {attempt}</span>}
               </span>
               <Button loading={scoring} disabled={!hasAnswer} onClick={handleSubmit}>
-                {scoring ? "Scoring…" : "Submit Answer"}
+                {scoring ? "Scoring…" : attempt > 1 ? "Re-score Answer" : "Submit Answer"}
               </Button>
             </div>
           </div>
@@ -163,7 +175,18 @@ export function QuestionCard({ question, index, total, onScore, onNext, isLast }
               streaming={scoring}
             />
 
-            <div className="flex justify-end pt-1">
+            <div className="flex items-center justify-between pt-1 gap-3">
+              <button
+                type="button"
+                onClick={handleRetry}
+                disabled={scoring}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-violet-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M5.5 9A7 7 0 0118.6 7.4M18.5 15A7 7 0 015.4 16.6" />
+                </svg>
+                Try a stronger answer
+              </button>
               <Button onClick={onNext} disabled={scoring}>
                 {isLast ? "See Results →" : "Next Question →"}
               </Button>

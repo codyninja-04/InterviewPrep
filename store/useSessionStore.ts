@@ -16,6 +16,7 @@ interface SessionState {
   setQuestions: (questions: Question[]) => void;
   setAnswer: (questionId: string, answer: string) => void;
   setScore: (questionId: string, score: AnswerScore) => void;
+  clearScore: (questionId: string) => void;
   reset: () => void;
 }
 
@@ -46,6 +47,16 @@ export const useSessionStore = create<SessionState>()(
           questions: state.questions.map((q) =>
             q.id === questionId ? { ...q, score } : q
           ),
+        })),
+
+      clearScore: (questionId) =>
+        set((state) => ({
+          questions: state.questions.map((q) => {
+            if (q.id !== questionId) return q;
+            const { score: _omit, ...rest } = q;
+            void _omit;
+            return rest;
+          }),
         })),
 
       reset: () => set(INITIAL_STATE),
