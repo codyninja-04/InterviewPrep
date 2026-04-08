@@ -142,3 +142,266 @@ html { scroll-behavior: smooth; }
   background: linear-gradient(90deg, transparent, rgba(139,92,246,0.15), transparent);
   animation: beam 3s ease-in-out infinite 2s;
 }
+
+/* ── Print / PDF export ────────────────────────────── */
+@media screen {
+  .print-only { display: none !important; }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm 16mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #18181b !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide everything by default… */
+  body * { visibility: hidden !important; }
+  /* …then re-show only the print report */
+  .print-root, .print-root * { visibility: visible !important; }
+  .print-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #18181b !important;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+  }
+
+  /* Suppress all animations and decorative effects */
+  .print-root *,
+  .print-root *::before,
+  .print-root *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .print-header {
+    border-bottom: 2px solid #18181b;
+    padding-bottom: 12pt;
+    margin-bottom: 18pt;
+  }
+  .print-eyebrow {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #71717a !important;
+    font-weight: 600;
+    margin: 0 0 6pt 0;
+  }
+  .print-title {
+    font-size: 24pt;
+    font-weight: 800;
+    margin: 0;
+    color: #09090b !important;
+    letter-spacing: -0.01em;
+  }
+  .print-company {
+    font-size: 12pt;
+    color: #3f3f46 !important;
+    margin: 2pt 0 0 0;
+    font-weight: 500;
+  }
+  .print-meta {
+    font-size: 9pt;
+    color: #71717a !important;
+    margin: 8pt 0 0 0;
+  }
+
+  .print-summary {
+    display: flex;
+    align-items: center;
+    gap: 24pt;
+    border: 1px solid #e4e4e7;
+    border-radius: 6pt;
+    padding: 14pt 18pt;
+    margin-bottom: 20pt;
+    page-break-inside: avoid;
+  }
+  .print-summary-main {
+    border-right: 1px solid #e4e4e7;
+    padding-right: 24pt;
+  }
+  .print-summary-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #71717a !important;
+    margin: 0 0 4pt 0;
+    font-weight: 600;
+  }
+  .print-summary-score {
+    font-size: 32pt;
+    font-weight: 800;
+    margin: 0;
+    color: #09090b !important;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .print-summary-denom {
+    font-size: 14pt;
+    font-weight: 500;
+    color: #a1a1aa !important;
+  }
+  .print-summary-grid {
+    display: flex;
+    gap: 18pt;
+    flex: 1;
+  }
+  .print-summary-cell-value {
+    font-size: 16pt;
+    font-weight: 700;
+    margin: 0;
+    color: #18181b !important;
+    font-variant-numeric: tabular-nums;
+  }
+  .print-summary-cell-value span {
+    font-size: 9pt;
+    color: #a1a1aa !important;
+    font-weight: 500;
+  }
+  .print-summary-cell-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #71717a !important;
+    margin: 2pt 0 0 0;
+    font-weight: 600;
+  }
+
+  .print-section {
+    margin-bottom: 16pt;
+  }
+  .print-h2 {
+    font-size: 11pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #18181b !important;
+    border-bottom: 1px solid #e4e4e7;
+    padding-bottom: 4pt;
+    margin: 0 0 10pt 0;
+  }
+
+  .print-skills-row {
+    display: flex;
+    gap: 10pt;
+    margin-bottom: 4pt;
+    font-size: 9.5pt;
+  }
+  .print-skills-label {
+    font-weight: 700;
+    color: #52525b !important;
+    flex-shrink: 0;
+    min-width: 60pt;
+  }
+  .print-skills-list {
+    color: #18181b !important;
+  }
+
+  .print-question {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    border-top: 1px solid #e4e4e7;
+    padding-top: 12pt;
+    margin-top: 12pt;
+  }
+  .print-question:first-child {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+  .print-question-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10pt;
+    margin-bottom: 6pt;
+  }
+  .print-question-num {
+    font-weight: 800;
+    font-size: 11pt;
+    color: #09090b !important;
+  }
+  .print-question-type {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #71717a !important;
+    font-weight: 600;
+    flex: 1;
+  }
+  .print-question-score {
+    font-weight: 800;
+    font-size: 11pt;
+    color: #09090b !important;
+    font-variant-numeric: tabular-nums;
+  }
+  .print-question-text {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #18181b !important;
+    margin: 0 0 8pt 0;
+    line-height: 1.45;
+  }
+  .print-skipped {
+    font-style: italic;
+    color: #a1a1aa !important;
+    font-size: 9.5pt;
+    margin: 4pt 0;
+  }
+
+  .print-block {
+    margin: 8pt 0;
+  }
+  .print-block-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #71717a !important;
+    font-weight: 700;
+    margin: 0 0 3pt 0;
+  }
+  .print-block-body {
+    font-size: 9.5pt;
+    color: #27272a !important;
+    margin: 0;
+    line-height: 1.55;
+  }
+  .print-block-sample {
+    border-left: 2pt solid #c4b5fd;
+    padding-left: 8pt;
+    color: #3f3f46 !important;
+  }
+  .print-list {
+    margin: 0;
+    padding-left: 14pt;
+    font-size: 9.5pt;
+    color: #27272a !important;
+  }
+  .print-list li {
+    margin-bottom: 2pt;
+    line-height: 1.5;
+  }
+
+  .print-footer {
+    margin-top: 24pt;
+    padding-top: 8pt;
+    border-top: 1px solid #e4e4e7;
+    font-size: 8pt;
+    color: #a1a1aa !important;
+    text-align: center;
+  }
+
+  .no-print { display: none !important; }
+}

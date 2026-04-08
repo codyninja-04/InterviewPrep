@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { PrintableReport } from "@/components/PrintableReport";
 import { createClient } from "@/lib/supabase/client";
 import type { ParsedJD, Question } from "@/lib/types";
 
@@ -62,7 +63,7 @@ export function ResultsView({ parsedJD, questions, avgScore, rawJD, mode, onRese
   const strokeDashoffset = circumference - (readiness / 100) * circumference;
 
   return (
-    <main className="min-h-screen bg-[#09090b] pt-20 pb-24">
+    <main className="min-h-screen bg-[#09090b] pt-20 pb-24 no-print">
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="bg-grid absolute inset-0 opacity-60" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[50rem] w-[50rem] rounded-full bg-violet-600/8 blur-[100px]" />
@@ -192,7 +193,24 @@ export function ResultsView({ parsedJD, questions, avgScore, rawJD, mode, onRese
             </>
           )}
         </div>
+
+        {/* Export PDF — disabled until at least one answer has been scored */}
+        <div className="fade-in-up-3 pt-1">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            disabled={answered === 0}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-zinc-900 hover:bg-zinc-800/80 px-4 py-3 text-sm font-medium text-zinc-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+            </svg>
+            Export as PDF
+          </button>
+        </div>
       </div>
+
+      <PrintableReport parsedJD={parsedJD} questions={questions} avgScore={avgScore} />
     </main>
   );
 }
