@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { askGeminiJSON } from "@/lib/gemini";
+import { askGeminiStream } from "@/lib/gemini";
 import { ANSWER_SCORER_PROMPT } from "@/lib/prompts";
-import type { AnswerScore } from "@/lib/types";
 
 // Cap answer length sent to AI — saves tokens on every scoring call
 const ANSWER_CHAR_LIMIT = 1_200;
@@ -33,9 +32,28 @@ export async function POST(req: NextRequest) {
       .replace("{skill}", skill ?? "general")
       .replace("{answer}", truncatedAnswer);
 
-    const scored = await askGeminiJSON<AnswerScore>(prompt);
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of askGeminiStream(prompt)) {
+            controller.enqueue(encoder.encode(chunk));
+          }
+          controller.close();
+        } catch (err) {
+          console.error("[score-answer:stream]", err);
+          controller.error(err);
+        }
+      },
+    });
 
-    return NextResponse.json(scored);
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+      },
+    });
   } catch (error) {
     console.error("[score-answer]", error);
     return NextResponse.json(

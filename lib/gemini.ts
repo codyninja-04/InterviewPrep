@@ -128,3 +128,51 @@ export async function askGeminiJSON<T>(prompt: string): Promise<T> {
 
   throw new Error("All AI providers are rate limited. Please try again later.");
 }
+
+/**
+ * Streaming variant of {@link askGeminiJSON}. Yields raw text chunks as they
+ * arrive from Gemini. If all Gemini keys are rate limited, falls back to
+ * non-streaming Groq/OpenRouter and yields the full result as one chunk.
+ */
+export async function* askGeminiStream(prompt: string): AsyncGenerator<string> {
+  for (const key of geminiKeys) {
+    const model = new GoogleGenerativeAI(key).getGenerativeModel({
+      model: "gemini-2.0-flash",
+    });
+    try {
+      const result = await model.generateContentStream({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json" },
+      });
+      for await (const chunk of result.stream) {
+        const text = chunk.text();
+        if (text) yield text;
+      }
+      return;
+    } catch (err) {
+      if (isRateLimit(err)) {
+        console.warn(`[AI] Gemini key ...${key.slice(-6)} rate limited — trying next`);
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  console.warn("[AI] Gemini streaming exhausted — falling back to non-streaming providers");
+  if (groqKeys.length > 0) {
+    try {
+      const data = await askGroqJSON<unknown>(prompt);
+      yield JSON.stringify(data);
+      return;
+    } catch {
+      console.warn("[AI] Groq fallback failed — trying OpenRouter");
+    }
+  }
+  if (openRouterKeys.length > 0) {
+    const data = await askOpenRouterJSON<unknown>(prompt);
+    yield JSON.stringify(data);
+    return;
+  }
+
+  throw new Error("All AI providers are rate limited. Please try again later.");
+}

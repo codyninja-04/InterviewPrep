@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { ScoreFeedback } from "@/components/ScoreFeedback";
+import { tryParsePartial } from "@/lib/partialJson";
 import type { Question, AnswerScore } from "@/lib/types";
 
 type BadgeVariant = "violet" | "emerald" | "sky";
@@ -30,6 +31,7 @@ export function QuestionCard({ question, index, total, onScore, onNext, isLast }
   const [error, setError] = useState<string | null>(null);
   const [scored, setScored] = useState(!!question.score);
   const [hintOpen, setHintOpen] = useState(false);
+  const [streamingScore, setStreamingScore] = useState<Partial<AnswerScore> | null>(null);
 
   const typeMeta = TYPE_STYLE[question.type];
   const hasAnswer = answer.trim().length >= 10;
@@ -39,6 +41,7 @@ export function QuestionCard({ question, index, total, onScore, onNext, isLast }
     if (!hasAnswer || scoring) return;
     setScoring(true);
     setError(null);
+    setStreamingScore(null);
 
     try {
       const res = await fetch("/api/score-answer", {
@@ -51,11 +54,35 @@ export function QuestionCard({ question, index, total, onScore, onNext, isLast }
           skill: question.mapped_skill,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Scoring failed.");
-      onScore(data);
+
+      if (!res.ok || !res.body) {
+        // Error responses are still JSON
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Scoring failed.");
+      }
+
+      // Reveal the card immediately so partial fields can render as they arrive
       setScored(true);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        const partial = tryParsePartial<AnswerScore>(acc);
+        if (partial) setStreamingScore(partial);
+      }
+      acc += decoder.decode();
+
+      const final = JSON.parse(acc) as AnswerScore;
+      setStreamingScore(final);
+      onScore(final);
     } catch (err) {
+      setScored(false);
+      setStreamingScore(null);
       setError(err instanceof Error ? err.message : "Unexpected error.");
     } finally {
       setScoring(false);
@@ -123,7 +150,7 @@ export function QuestionCard({ question, index, total, onScore, onNext, isLast }
         )}
 
         {/* Scored state */}
-        {scored && question.score && (
+        {scored && (question.score || streamingScore) && (
           <div className="space-y-4">
             {/* Submitted answer */}
             <div className="rounded-xl border border-white/[0.05] bg-zinc-800/40 p-4 space-y-1.5">
@@ -131,10 +158,13 @@ export function QuestionCard({ question, index, total, onScore, onNext, isLast }
               <p className="text-sm text-zinc-300 leading-relaxed">{answer}</p>
             </div>
 
-            <ScoreFeedback score={question.score} />
+            <ScoreFeedback
+              score={(question.score ?? streamingScore) as Partial<AnswerScore>}
+              streaming={scoring}
+            />
 
             <div className="flex justify-end pt-1">
-              <Button onClick={onNext}>
+              <Button onClick={onNext} disabled={scoring}>
                 {isLast ? "See Results →" : "Next Question →"}
               </Button>
             </div>

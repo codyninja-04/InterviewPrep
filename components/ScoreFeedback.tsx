@@ -3,38 +3,54 @@
 import type { AnswerScore } from "@/lib/types";
 
 interface ScoreFeedbackProps {
-  score: AnswerScore;
+  score: Partial<AnswerScore>;
+  streaming?: boolean;
 }
 
 const SCORE_META = {
+  pending:   { label: "Scoring…",       color: "text-zinc-400",    bg: "bg-zinc-500/10",    ring: "ring-zinc-500/20",    bar: "from-zinc-600 to-zinc-400" },
   low:       { label: "Needs Work",     color: "text-rose-400",    bg: "bg-rose-500/10",    ring: "ring-rose-500/20",    bar: "from-rose-600 to-rose-400" },
   mid:       { label: "Getting There",  color: "text-amber-400",   bg: "bg-amber-500/10",   ring: "ring-amber-500/20",   bar: "from-amber-600 to-amber-400" },
   good:      { label: "Good Answer",    color: "text-emerald-400", bg: "bg-emerald-500/10", ring: "ring-emerald-500/20", bar: "from-emerald-600 to-emerald-400" },
   excellent: { label: "Excellent",      color: "text-violet-400",  bg: "bg-violet-500/10",  ring: "ring-violet-500/20",  bar: "from-violet-600 to-violet-400" },
 };
 
-function getMeta(score: number) {
+function getMeta(score: number | undefined) {
+  if (score == null) return SCORE_META.pending;
   if (score <= 3) return SCORE_META.low;
   if (score <= 6) return SCORE_META.mid;
   if (score <= 8) return SCORE_META.good;
   return SCORE_META.excellent;
 }
 
-export function ScoreFeedback({ score: data }: ScoreFeedbackProps) {
+export function ScoreFeedback({ score: data, streaming = false }: ScoreFeedbackProps) {
+  const hasScore = typeof data.score === "number";
   const meta = getMeta(data.score);
-  const pct = (data.score / 10) * 100;
+  const pct = hasScore ? (data.score! / 10) * 100 : 0;
+  const strengths = data.strengths ?? [];
+  const improvements = data.improvements ?? [];
+  const sample = data.sample_better_answer ?? "";
 
   return (
     <div className="space-y-4">
       {/* Score header */}
       <div className={`rounded-xl border ${meta.ring} ring-1 ${meta.bg} px-5 py-4 flex items-center gap-4`}>
         <div className="shrink-0">
-          <p className={`text-4xl font-extrabold tabular-nums ${meta.color}`}>{data.score}<span className="text-lg font-medium text-zinc-600">/10</span></p>
+          {hasScore ? (
+            <p className={`text-4xl font-extrabold tabular-nums ${meta.color}`}>
+              {data.score}<span className="text-lg font-medium text-zinc-600">/10</span>
+            </p>
+          ) : (
+            <div className="h-10 w-16 rounded-md bg-zinc-800/60 animate-pulse" />
+          )}
         </div>
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center justify-between">
-            <span className={`text-sm font-semibold ${meta.color}`}>{meta.label}</span>
-            <span className="text-xs text-zinc-600">{pct}%</span>
+            <span className={`text-sm font-semibold ${meta.color}`}>
+              {meta.label}
+              {streaming && hasScore && <span className="ml-1.5 text-zinc-600">•</span>}
+            </span>
+            {hasScore && <span className="text-xs text-zinc-600">{pct}%</span>}
           </div>
           <div className="h-1.5 w-full rounded-full bg-zinc-800/80 overflow-hidden">
             <div
@@ -56,14 +72,18 @@ export function ScoreFeedback({ score: data }: ScoreFeedbackProps) {
             </div>
             <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Strengths</p>
           </div>
-          <ul className="space-y-2">
-            {data.strengths.map((s, i) => (
-              <li key={i} className="flex gap-2.5 text-xs text-zinc-300 leading-relaxed">
-                <span className="mt-1.5 shrink-0 size-1 rounded-full bg-emerald-500" />
-                {s}
-              </li>
-            ))}
-          </ul>
+          {strengths.length === 0 && streaming ? (
+            <SkeletonList />
+          ) : (
+            <ul className="space-y-2">
+              {strengths.map((s, i) => (
+                <li key={i} className="flex gap-2.5 text-xs text-zinc-300 leading-relaxed fade-in-up">
+                  <span className="mt-1.5 shrink-0 size-1 rounded-full bg-emerald-500" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="rounded-xl border border-white/[0.06] bg-zinc-900 p-4 space-y-3">
@@ -75,14 +95,18 @@ export function ScoreFeedback({ score: data }: ScoreFeedbackProps) {
             </div>
             <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Improve</p>
           </div>
-          <ul className="space-y-2">
-            {data.improvements.map((s, i) => (
-              <li key={i} className="flex gap-2.5 text-xs text-zinc-300 leading-relaxed">
-                <span className="mt-1.5 shrink-0 size-1 rounded-full bg-amber-500" />
-                {s}
-              </li>
-            ))}
-          </ul>
+          {improvements.length === 0 && streaming ? (
+            <SkeletonList />
+          ) : (
+            <ul className="space-y-2">
+              {improvements.map((s, i) => (
+                <li key={i} className="flex gap-2.5 text-xs text-zinc-300 leading-relaxed fade-in-up">
+                  <span className="mt-1.5 shrink-0 size-1 rounded-full bg-amber-500" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
@@ -96,8 +120,29 @@ export function ScoreFeedback({ score: data }: ScoreFeedbackProps) {
           </div>
           <p className="text-xs font-semibold uppercase tracking-widest text-violet-400">Stronger Answer</p>
         </div>
-        <p className="text-sm text-zinc-300 leading-relaxed">{data.sample_better_answer}</p>
+        {sample ? (
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            {sample}
+            {streaming && <span className="inline-block ml-0.5 w-1.5 h-3.5 align-middle bg-violet-400/70 animate-pulse" />}
+          </p>
+        ) : streaming ? (
+          <div className="space-y-1.5">
+            <div className="h-3 w-full rounded bg-zinc-800/60 animate-pulse" />
+            <div className="h-3 w-11/12 rounded bg-zinc-800/60 animate-pulse" />
+            <div className="h-3 w-4/5 rounded bg-zinc-800/60 animate-pulse" />
+          </div>
+        ) : null}
       </div>
+    </div>
+  );
+}
+
+function SkeletonList() {
+  return (
+    <div className="space-y-2">
+      <div className="h-3 w-full rounded bg-zinc-800/60 animate-pulse" />
+      <div className="h-3 w-5/6 rounded bg-zinc-800/60 animate-pulse" />
+      <div className="h-3 w-3/4 rounded bg-zinc-800/60 animate-pulse" />
     </div>
   );
 }
