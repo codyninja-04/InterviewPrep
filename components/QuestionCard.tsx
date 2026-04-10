@@ -23,11 +23,12 @@ interface QuestionCardProps {
   onScore: (score: AnswerScore) => void;
   onNext: () => void;
   onRetry?: () => void;
+  onSkip?: () => void;
   isLast: boolean;
   timeLimit?: number; // seconds; undefined = no timer
 }
 
-export function QuestionCard({ question, index, total, onScore, onNext, onRetry, isLast, timeLimit }: QuestionCardProps) {
+export function QuestionCard({ question, index, total, onScore, onNext, onRetry, onSkip, isLast, timeLimit }: QuestionCardProps) {
   const [answer, setAnswer] = useState(question.user_answer ?? "");
   const [scoring, setScoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -207,10 +208,21 @@ export function QuestionCard({ question, index, total, onScore, onNext, onRetry,
               error={error ?? undefined}
             />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-zinc-600 tabular-nums">
-                {wordCount} word{wordCount !== 1 ? "s" : ""}
-                {attempt > 1 && <span className="ml-2 text-violet-400">· attempt {attempt}</span>}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-zinc-600 tabular-nums">
+                  {wordCount} word{wordCount !== 1 ? "s" : ""}
+                  {attempt > 1 && <span className="ml-2 text-violet-400">· attempt {attempt}</span>}
+                </span>
+                {onSkip && !scoring && (
+                  <button
+                    type="button"
+                    onClick={onSkip}
+                    className="text-xs text-zinc-700 hover:text-zinc-400 transition-colors"
+                  >
+                    {isLast ? "Skip & Finish →" : "Skip →"}
+                  </button>
+                )}
+              </div>
               <Button loading={scoring} disabled={!hasAnswer} onClick={handleSubmit}>
                 {scoring ? "Scoring…" : attempt > 1 ? "Re-score Answer" : "Submit Answer"}
               </Button>

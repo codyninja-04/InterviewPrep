@@ -44,8 +44,18 @@ export default function SessionPage() {
   }
 
   function handleNext() {
-    if (activeIndex < questions.length - 1) setActiveIndex((i) => i + 1);
-    else setDone(true);
+    // Jump to the next unanswered question after the current one, wrapping
+    // around to earlier unanswered ones, or finish if all are answered.
+    const total = questions.length;
+    for (let offset = 1; offset < total; offset++) {
+      const next = (activeIndex + offset) % total;
+      if (!questions[next].score) {
+        setActiveIndex(next);
+        return;
+      }
+    }
+    // All questions answered
+    setDone(true);
   }
 
   if (done) {
@@ -148,16 +158,14 @@ export default function SessionPage() {
           {questions.map((q, i) => (
             <button
               key={q.id}
-              onClick={() => i <= answered && setActiveIndex(i)}
+              onClick={() => setActiveIndex(i)}
               title={q.question}
               className={`shrink-0 size-8 rounded-lg text-xs font-bold transition-all duration-200 ${
                 i === activeIndex
                   ? "bg-violet-600 text-white shadow-lg shadow-violet-900/50 scale-110"
                   : q.score
                   ? "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/25 hover:bg-emerald-500/25"
-                  : i <= answered
-                  ? "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-                  : "bg-zinc-900/50 text-zinc-700 cursor-not-allowed"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
               }`}
             >
               {i + 1}
@@ -174,7 +182,11 @@ export default function SessionPage() {
           onScore={handleScore}
           onNext={handleNext}
           onRetry={() => clearScore(questions[activeIndex].id)}
-          isLast={activeIndex === questions.length - 1}
+          onSkip={() => {
+            if (activeIndex < questions.length - 1) setActiveIndex((i) => i + 1);
+            else setDone(true);
+          }}
+          isLast={questions.filter((q) => !q.score).length <= 1}
           timeLimit={timedMode ? timeLimit : undefined}
         />
       </div>
