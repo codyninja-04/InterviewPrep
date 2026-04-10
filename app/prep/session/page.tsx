@@ -8,12 +8,21 @@ import { ResultsView } from "@/components/ResultsView";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import type { AnswerScore } from "@/lib/types";
 
+const TIME_OPTIONS = [
+  { label: "1 min", seconds: 60 },
+  { label: "2 min", seconds: 120 },
+  { label: "3 min", seconds: 180 },
+  { label: "5 min", seconds: 300 },
+];
+
 export default function SessionPage() {
   const router = useRouter();
   const { parsedJD, questions, setScore, setAnswer, clearScore, reset } = useSessionStore();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [done, setDone] = useState(false);
+  const [timedMode, setTimedMode] = useState(false);
+  const [timeLimit, setTimeLimit] = useState(180); // seconds
 
   useEffect(() => {
     if (!parsedJD || questions.length === 0) router.replace("/prep");
@@ -97,6 +106,40 @@ export default function SessionPage() {
                 </p>
               )}
             </div>
+
+            {/* Timed mode toggle */}
+            <div className="flex items-center gap-3 pt-0.5">
+              <button
+                type="button"
+                onClick={() => setTimedMode((v) => !v)}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${timedMode ? "bg-violet-600" : "bg-zinc-700"}`}
+                role="switch"
+                aria-checked={timedMode}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 ${timedMode ? "translate-x-4" : "translate-x-0"}`}
+                />
+              </button>
+              <span className="text-[11px] text-zinc-500">Timed mode</span>
+              {timedMode && (
+                <div className="flex gap-1 ml-auto">
+                  {TIME_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.seconds}
+                      type="button"
+                      onClick={() => setTimeLimit(opt.seconds)}
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors ${
+                        timeLimit === opt.seconds
+                          ? "bg-violet-600 text-white"
+                          : "bg-zinc-800 text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -124,7 +167,7 @@ export default function SessionPage() {
 
         {/* Active question */}
         <QuestionCard
-          key={questions[activeIndex].id}
+          key={`${questions[activeIndex].id}-${activeIndex}`}
           question={questions[activeIndex]}
           index={activeIndex}
           total={questions.length}
@@ -132,6 +175,7 @@ export default function SessionPage() {
           onNext={handleNext}
           onRetry={() => clearScore(questions[activeIndex].id)}
           isLast={activeIndex === questions.length - 1}
+          timeLimit={timedMode ? timeLimit : undefined}
         />
       </div>
     </main>

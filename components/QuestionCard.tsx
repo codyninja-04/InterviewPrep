@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
@@ -24,9 +24,10 @@ interface QuestionCardProps {
   onNext: () => void;
   onRetry?: () => void;
   isLast: boolean;
+  timeLimit?: number; // seconds; undefined = no timer
 }
 
-export function QuestionCard({ question, index, total, onScore, onNext, onRetry, isLast }: QuestionCardProps) {
+export function QuestionCard({ question, index, total, onScore, onNext, onRetry, isLast, timeLimit }: QuestionCardProps) {
   const [answer, setAnswer] = useState(question.user_answer ?? "");
   const [scoring, setScoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,25 @@ export function QuestionCard({ question, index, total, onScore, onNext, onRetry,
   const [hintOpen, setHintOpen] = useState(false);
   const [streamingScore, setStreamingScore] = useState<Partial<AnswerScore> | null>(null);
   const [attempt, setAttempt] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(timeLimit ?? 0);
+  const [timeUp, setTimeUp] = useState(false);
+
+  // Countdown: starts/restarts whenever scored or scoring state changes.
+  // The interval self-terminates when it hits 0.
+  useEffect(() => {
+    if (!timeLimit || scored || scoring) return;
+    const id = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(id);
+          setTimeUp(true);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [timeLimit, scored, scoring]);
 
   function handleRetry() {
     if (scoring) return;
@@ -41,8 +61,22 @@ export function QuestionCard({ question, index, total, onScore, onNext, onRetry,
     setStreamingScore(null);
     setError(null);
     setAttempt((n) => n + 1);
+    setTimeLeft(timeLimit ?? 0);
+    setTimeUp(false);
     onRetry?.();
   }
+
+  const timerPct = timeLimit ? (timeLeft / timeLimit) * 100 : 100;
+  const timerColor =
+    timerPct > 50 ? "text-emerald-400" :
+    timerPct > 25 ? "text-amber-400" :
+    "text-rose-400";
+  const timerBarColor =
+    timerPct > 50 ? "bg-emerald-500" :
+    timerPct > 25 ? "bg-amber-500" :
+    "bg-rose-500";
+  const timerMins = Math.floor(timeLeft / 60);
+  const timerSecs = timeLeft % 60;
 
   const typeMeta = TYPE_STYLE[question.type];
   const hasAnswer = answer.trim().length >= 10;
@@ -141,6 +175,29 @@ export function QuestionCard({ question, index, total, onScore, onNext, onRetry,
         {/* Answer input */}
         {!scored && (
           <div className="space-y-3">
+            {/* Timer bar */}
+            {!!timeLimit && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs font-mono font-semibold tabular-nums ${timeUp ? "text-rose-400 animate-pulse" : timerColor}`}>
+                    {timeUp ? "Time's up" : `${timerMins}:${String(timerSecs).padStart(2, "0")}`}
+                  </span>
+                  <span className="text-[10px] text-zinc-700">time remaining</span>
+                </div>
+                <div className="h-1 rounded-full bg-zinc-800 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ease-linear ${timerBarColor}`}
+                    style={{ width: `${timerPct}%` }}
+                  />
+                </div>
+                {timeUp && (
+                  <p className="text-[11px] text-rose-400/80 leading-snug">
+                    Submit your answer now — even a partial response is better than nothing.
+                  </p>
+                )}
+              </div>
+            )}
+
             <Textarea
               placeholder="Type your answer — aim for 3–5 sentences with a concrete example…"
               rows={6}
