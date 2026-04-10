@@ -14,6 +14,11 @@ export interface ParsedJD {
 
 export type QuestionType = "technical" | "behavioral" | "situational";
 
+export interface QuestionAttempt {
+  answer: string;
+  score: AnswerScore;
+}
+
 export interface Question {
   id: string;
   question: string;
@@ -22,6 +27,7 @@ export interface Question {
   what_they_look_for: string;
   user_answer?: string;
   score?: AnswerScore;
+  attempts?: QuestionAttempt[]; // all scored attempts, oldest first
 }
 
 // ─── Answer Score ────────────────────────────────────────────────────────────

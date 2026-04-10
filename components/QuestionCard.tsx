@@ -232,6 +232,48 @@ export function QuestionCard({ question, index, total, onScore, onNext, onRetry,
               streaming={scoring}
             />
 
+            {/* Attempt history — only shown when there are multiple scored attempts */}
+            {(question.attempts?.length ?? 0) > 1 && (
+              <div className="rounded-xl border border-white/[0.05] bg-zinc-800/30 px-4 py-3 space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600">Attempt History</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {question.attempts!.map((a, i) => {
+                    const prev = question.attempts![i - 1];
+                    const delta = prev ? a.score.score - prev.score.score : null;
+                    const scoreColor =
+                      a.score.score >= 9 ? "text-violet-400" :
+                      a.score.score >= 7 ? "text-emerald-400" :
+                      a.score.score >= 5 ? "text-amber-400" :
+                      "text-rose-400";
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        {i > 0 && (
+                          <svg className="size-3 text-zinc-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-xs font-bold tabular-nums ${scoreColor}`}>
+                            {a.score.score}/10
+                          </span>
+                          {delta !== null && (
+                            <span className={`text-[10px] font-semibold px-1 py-0.5 rounded ${
+                              delta > 0 ? "bg-emerald-500/15 text-emerald-400" :
+                              delta < 0 ? "bg-rose-500/15 text-rose-400" :
+                              "bg-zinc-700/50 text-zinc-500"
+                            }`}>
+                              {delta > 0 ? `+${delta}` : delta}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-zinc-700">#{i + 1}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between pt-1 gap-3">
               <button
                 type="button"

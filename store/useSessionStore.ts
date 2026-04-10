@@ -44,9 +44,11 @@ export const useSessionStore = create<SessionState>()(
 
       setScore: (questionId, score) =>
         set((state) => ({
-          questions: state.questions.map((q) =>
-            q.id === questionId ? { ...q, score } : q
-          ),
+          questions: state.questions.map((q) => {
+            if (q.id !== questionId) return q;
+            const attempt = { answer: q.user_answer ?? "", score };
+            return { ...q, score, attempts: [...(q.attempts ?? []), attempt] };
+          }),
         })),
 
       clearScore: (questionId) =>
@@ -55,7 +57,7 @@ export const useSessionStore = create<SessionState>()(
             if (q.id !== questionId) return q;
             const { score: _omit, ...rest } = q;
             void _omit;
-            return rest;
+            return rest; // attempts is preserved
           }),
         })),
 

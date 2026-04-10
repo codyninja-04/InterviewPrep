@@ -158,10 +158,18 @@ export function ResultsView({ parsedJD, questions, avgScore, rawJD, mode, onRese
                   </Badge>
                 </div>
                 {q.score ? (
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0 text-right space-y-0.5">
                     <p className={`text-sm font-extrabold tabular-nums ${
                       q.score.score >= 8 ? "text-violet-400" : q.score.score >= 6 ? "text-emerald-400" : q.score.score >= 4 ? "text-amber-400" : "text-rose-400"
                     }`}>{q.score.score}/10</p>
+                    {(q.attempts?.length ?? 0) > 1 && (() => {
+                      const delta = q.attempts!.at(-1)!.score.score - q.attempts![0].score.score;
+                      return (
+                        <p className={`text-[10px] font-semibold ${delta > 0 ? "text-emerald-500" : delta < 0 ? "text-rose-500" : "text-zinc-600"}`}>
+                          {delta > 0 ? `↑${delta}` : delta < 0 ? `↓${Math.abs(delta)}` : "="} over {q.attempts!.length} attempts
+                        </p>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <span className="shrink-0 text-[10px] text-zinc-700 bg-zinc-800/60 px-2 py-0.5 rounded-full">skipped</span>
