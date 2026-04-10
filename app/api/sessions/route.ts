@@ -41,11 +41,23 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+    const full = new URL(req.url).searchParams.get("full") === "true";
+
+    if (full) {
+      const { data, error } = await supabase
+        .from("prep_sessions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(data ?? []);
+    }
 
     const { data, error } = await supabase
       .from("prep_sessions")

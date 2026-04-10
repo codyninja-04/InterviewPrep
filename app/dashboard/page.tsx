@@ -26,17 +26,9 @@ export default function DashboardPage() {
 
       if (!user) { setLoading(false); return; }
 
-      const res = await fetch("/api/sessions");
+      const res = await fetch("/api/sessions?full=true");
       if (res.ok) {
-        const list = await res.json();
-        // Fetch full data for each session for detailed stats
-        const fullSessions = await Promise.all(
-          list.map(async (s: { id: string }) => {
-            const r = await fetch(`/api/sessions/${s.id}`);
-            return r.ok ? r.json() : null;
-          })
-        );
-        setSessions(fullSessions.filter(Boolean));
+        setSessions(await res.json());
       }
       setLoading(false);
     }
