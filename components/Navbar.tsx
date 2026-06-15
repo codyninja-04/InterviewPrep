@@ -65,13 +65,13 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <span className="relative inline-flex size-8 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-amber-400 via-violet-500 to-violet-700 shadow-lg shadow-violet-900/40 transition-shadow duration-300 group-hover:shadow-violet-700/50">
+          <span className="relative inline-flex size-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 shadow-md shadow-violet-900/30 transition-shadow duration-300 group-hover:shadow-violet-700/40">
             <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round">
               <path d="M4 12h2M9 7v10M14 4v16M19 9v6M22 11h-1" />
             </svg>
           </span>
           <span className="font-display text-[17px] font-semibold tracking-tight text-zinc-100">
-            Prep<span className="text-amber-300">Sync</span>
+            Prep<span className="text-violet-300">Sync</span>
           </span>
         </Link>
 
@@ -156,14 +156,14 @@ export function Navbar() {
             <div className="flex items-center gap-2 ml-2">
               <button
                 onClick={handleSignIn}
-                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-zinc-900 px-4 py-2 text-sm text-zinc-300 hover:border-white/[0.15] hover:text-zinc-100 transition-all duration-200"
+                className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-zinc-900 px-4 py-2 text-sm text-zinc-300 hover:border-white/[0.15] hover:text-zinc-100 transition-colors duration-200"
               >
                 <GoogleIcon />
                 Sign in with Google
               </button>
               <Link
                 href="/prep"
-                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-b from-violet-500 to-violet-600 px-5 py-2 text-sm font-medium text-white shadow-md shadow-violet-900/30 hover:-translate-y-px hover:shadow-violet-700/40 transition-all duration-200"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-violet-500 transition-colors duration-200"
               >
                 Start Prepping
               </Link>
