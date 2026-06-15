@@ -65,13 +65,13 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="relative size-8 rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center shadow-lg shadow-violet-900/40 group-hover:shadow-violet-700/50 transition-shadow duration-300">
-            <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          <span className="relative inline-flex size-8 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-amber-400 via-violet-500 to-violet-700 shadow-lg shadow-violet-900/40 transition-shadow duration-300 group-hover:shadow-violet-700/50">
+            <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round">
+              <path d="M4 12h2M9 7v10M14 4v16M19 9v6M22 11h-1" />
             </svg>
-          </div>
-          <span className="font-bold text-[15px] tracking-tight text-zinc-100">
-            Prep<span className="text-violet-400">Sync</span>
+          </span>
+          <span className="font-display text-[17px] font-semibold tracking-tight text-zinc-100">
+            Prep<span className="text-amber-300">Sync</span>
           </span>
         </Link>
 
@@ -156,14 +156,14 @@ export function Navbar() {
             <div className="flex items-center gap-2 ml-2">
               <button
                 onClick={handleSignIn}
-                className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-zinc-900 px-4 py-2 text-sm text-zinc-300 hover:border-white/[0.15] hover:text-zinc-100 transition-all duration-200"
+                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-zinc-900 px-4 py-2 text-sm text-zinc-300 hover:border-white/[0.15] hover:text-zinc-100 transition-all duration-200"
               >
                 <GoogleIcon />
                 Sign in with Google
               </button>
               <Link
                 href="/prep"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-md shadow-violet-900/30 hover:bg-violet-500 transition-all duration-200"
+                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-b from-violet-500 to-violet-600 px-5 py-2 text-sm font-medium text-white shadow-md shadow-violet-900/30 hover:-translate-y-px hover:shadow-violet-700/40 transition-all duration-200"
               >
                 Start Prepping
               </Link>
